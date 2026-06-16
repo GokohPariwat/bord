@@ -488,7 +488,7 @@
         // โหลดข้อมูลเมื่อเปิดเว็บ และตั้งเวลาอัปเดตเงียบๆ ทุก 1 นาที
         window.addEventListener('DOMContentLoaded', () => {
             fetchData(false); // โหลดครั้งแรก
-            setInterval(() => fetchData(false), 60000); // โหลดอัตโนมัติทุก 60 วิ (ไม่แสดงไอคอนหมุน)
+            setInterval(() => fetchData(false), 30000); // โหลดอัตโนมัติทุก 60 วิ (ไม่แสดงไอคอนหมุน)
         });
 
     </script>
