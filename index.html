@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>แดชบอร์ดผลการเลือกตั้ง เรียลไทม์</title>
-    <!-- ใช้ Tailwind CSS สำหรับจัดรูปแบบให้สวยงามและ Responsive -->
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- ใช้ Chart.js สำหรับวาดกราฟ -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- ใช้ FontAwesome สำหรับไอคอน -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -16,20 +14,10 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Prompt', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Prompt', 'sans-serif'] },
                     colors: {
-                        gov: {
-                            light: '#e0f2fe',
-                            DEFAULT: '#0284c7',
-                            dark: '#0369a1'
-                        },
-                        council: {
-                            light: '#dcfce7',
-                            DEFAULT: '#16a34a',
-                            dark: '#15803d'
-                        }
+                        gov: { light: '#e0f2fe', DEFAULT: '#0284c7', dark: '#0369a1' },
+                        council: { light: '#dcfce7', DEFAULT: '#16a34a', dark: '#15803d' }
                     }
                 }
             }
@@ -43,7 +31,6 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         }
-        /* ซ่อน scrollbar สำหรับตารางคะแนน */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -53,23 +40,21 @@
     <header class="bg-gradient-to-r from-slate-800 to-slate-900 text-white py-6 px-6 shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-4">
-                <!-- เพิ่ม LOGO ตรงนี้ (ซ่อนอัตโนมัติถ้าหาไฟล์ไม่เจอ) -->
-                <div class="shrink-0">
-                    <img src="Logo.png" alt="โลโก้" class="w-14 h-14 object-contain drop-shadow-md bg-white rounded-full p-1" onerror="this.style.display='none'">
-                </div>
-                <!-- ส่วนข้อความ -->
+                <!-- โลโก้ มุมบนซ้าย -->
+                <img src="Logo.png" alt="Logo" class="w-14 h-14 bg-white rounded-full p-1 shadow-sm object-contain" onerror="this.style.display='none'">
                 <div>
-                    <h1 class="text-2xl font-bold tracking-wide">แดชบอร์ดผลการเลือกตั้ง <span class="text-blue-400">LIVE</span></h1>
-                    <p class="text-sm text-slate-300 opacity-90 mt-1">สรุปผลคะแนน ผู้ว่าราชการกรุงเทพมหานคร และ สมาชิกสภากรุงเทพมหานคร (ส.ก.) สำนักงานเขตพญาไท</p>
+                    <h1 class="text-2xl font-bold tracking-wide text-center md:text-left">แดชบอร์ดผลการเลือกตั้ง <span class="text-blue-400">LIVE</span></h1>
+                    <p class="text-sm text-slate-300 opacity-90 mt-1 text-center md:text-left">สรุปผลคะแนน ผู้ว่าราชการกรุงเทพมหานคร และ สมาชิกสภากรุงเทพมหานคร (ส.ก.) สำนักงานเขตพญาไท</p>
                 </div>
             </div>
             
-            <div class="flex items-center gap-4 mt-4 md:mt-0">
+            <div class="flex items-center gap-4 mt-2 md:mt-0">
                 <div class="text-right hidden sm:block">
                     <p class="text-xs text-slate-400">อัปเดตข้อมูลล่าสุด</p>
                     <p id="last-updated" class="text-sm font-medium text-emerald-400">กำลังโหลด...</p>
                 </div>
-                <button onclick="fetchData()" id="refresh-btn" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2 shadow-lg shadow-blue-900/20 active:scale-95">
+                <!-- ส่งค่า true เพื่อบอกว่าเป็นกดปุ่มแบบ Manual ให้แสดงไอคอนหมุน -->
+                <button onclick="fetchData(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2 shadow-lg shadow-blue-900/20 active:scale-95">
                     <i class="fa-solid fa-arrows-rotate" id="refresh-icon"></i> 
                     <span>รีเฟรชข้อมูล</span>
                 </button>
@@ -77,10 +62,7 @@
         </div>
     </header>
 
-    <!-- ลบ div id="loading-overlay" เดิมทิ้งไป เพื่อไม่ให้มีจอโผล่มาบังเวลาโหลด -->
-
     <main class="flex-grow p-4 md:p-6 w-full max-w-[1600px] mx-auto">
-        <!-- Error Message Container -->
         <div id="error-container" class="hidden mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative" role="alert">
             <strong class="font-bold"><i class="fa-solid fa-circle-exclamation mr-2"></i>เกิดข้อผิดพลาด!</strong>
             <span class="block sm:inline" id="error-message"></span>
@@ -88,13 +70,13 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 xl:gap-8">
             
+            <!-- ผู้ว่าราชการกรุงเทพมหานคร -->
             <section class="flex flex-col gap-5">
                 <div class="flex items-center gap-3 border-b-2 border-gov pb-2">
                     <i class="fa-solid fa-user-tie text-2xl text-gov"></i>
                     <h2 class="text-xl md:text-2xl font-bold text-slate-800">ผลคะแนน ผู้ว่าราชการฯ</h2>
                 </div>
 
-                <!-- สรุปข้อมูลบัตร (Governor) -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div class="glass-card rounded-xl p-4 border-l-4 border-l-blue-500">
                         <p class="text-xs text-slate-500 font-medium mb-1">ผู้มาใช้สิทธิรวม</p>
@@ -114,15 +96,14 @@
                     </div>
                 </div>
 
-                <!-- กราฟและตาราง (Governor) -->
                 <div class="glass-card rounded-xl p-5 flex-grow flex flex-col">
                     <h3 class="text-sm font-semibold text-slate-600 mb-4 uppercase tracking-wider"><i class="fa-solid fa-chart-column mr-2"></i>กราฟแสดงคะแนนสูงสุด 5 อันดับแรก</h3>
-                    <div class="w-full h-[250px] mb-6 relative">
+                    <div class="w-full h-[200px] lg:h-[250px] mb-6 relative">
                         <canvas id="govChart"></canvas>
                     </div>
                     
                     <h3 class="text-sm font-semibold text-slate-600 mb-3 uppercase tracking-wider mt-2"><i class="fa-solid fa-list-ol mr-2"></i>ลำดับคะแนนผู้สมัคร</h3>
-                    <div class="flex-grow overflow-y-auto no-scrollbar max-h-[350px] pr-2">
+                    <div class="flex-grow overflow-y-auto no-scrollbar max-h-[70vh] lg:max-h-[350px] pr-2">
                         <table class="w-full text-left border-collapse">
                             <thead class="bg-slate-50 sticky top-0 z-10">
                                 <tr>
@@ -133,7 +114,6 @@
                                 </tr>
                             </thead>
                             <tbody id="gov-table-body" class="divide-y divide-slate-100">
-                                <!-- ข้อมูลตารางจะถูกใส่ด้วย JS -->
                                 <tr><td colspan="4" class="text-center py-4 text-slate-400">กำลังรอข้อมูล...</td></tr>
                             </tbody>
                         </table>
@@ -141,13 +121,13 @@
                 </div>
             </section>
 
+            <!-- สมาชิกสภากรุงเทพมหานคร (ส.ก.) -->
             <section class="flex flex-col gap-5">
                 <div class="flex items-center gap-3 border-b-2 border-council pb-2">
                     <i class="fa-solid fa-users text-2xl text-council"></i>
                     <h2 class="text-xl md:text-2xl font-bold text-slate-800">ผลคะแนน ส.ก.</h2>
                 </div>
 
-                <!-- สรุปข้อมูลบัตร (Council) -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div class="glass-card rounded-xl p-4 border-l-4 border-l-blue-500">
                         <p class="text-xs text-slate-500 font-medium mb-1">ผู้มาใช้สิทธิรวม</p>
@@ -167,15 +147,14 @@
                     </div>
                 </div>
 
-                <!-- กราฟและตาราง (Council) -->
                 <div class="glass-card rounded-xl p-5 flex-grow flex flex-col">
                     <h3 class="text-sm font-semibold text-slate-600 mb-4 uppercase tracking-wider"><i class="fa-solid fa-chart-column mr-2"></i>กราฟแสดงคะแนนสูงสุด 5 อันดับแรก</h3>
-                    <div class="w-full h-[250px] mb-6 relative">
+                    <div class="w-full h-[200px] lg:h-[250px] mb-6 relative">
                         <canvas id="councilChart"></canvas>
                     </div>
                     
                     <h3 class="text-sm font-semibold text-slate-600 mb-3 uppercase tracking-wider mt-2"><i class="fa-solid fa-list-ol mr-2"></i>ลำดับคะแนนผู้สมัคร</h3>
-                    <div class="flex-grow overflow-y-auto no-scrollbar max-h-[350px] pr-2">
+                    <div class="flex-grow overflow-y-auto no-scrollbar max-h-[70vh] lg:max-h-[350px] pr-2">
                         <table class="w-full text-left border-collapse">
                             <thead class="bg-slate-50 sticky top-0 z-10">
                                 <tr>
@@ -186,7 +165,6 @@
                                 </tr>
                             </thead>
                             <tbody id="council-table-body" class="divide-y divide-slate-100">
-                                <!-- ข้อมูลตารางจะถูกใส่ด้วย JS -->
                                 <tr><td colspan="4" class="text-center py-4 text-slate-400">กำลังรอข้อมูล...</td></tr>
                             </tbody>
                         </table>
@@ -205,22 +183,57 @@
         // URL ของ Google Apps Script ของคุณ
         const API_URL = 'https://script.google.com/macros/s/AKfycbw4JXalISmJDW9SlCSOlRj5tHY8qVtBU0AgP4vkHrR1W-8DighUkpoPwLNeoslvl6uSmQ/exec';
         
+        // ==========================================
+        // รายชื่อผู้สมัครและจำนวนผู้สมัครสูงสุด
+        const GOV_NAMES = {
+            1: "หม่อมหลวง กรกสิวัฒน์ เกษมศรี",
+            2: "นาย สมัย ละเลิศ",
+            3: "นาย พงษ์ศักดิ์ พัวพรพงษ์",
+            4: "นาย ประทีป วัชรโชคเกษม",
+            5: "นาย อนุชา บูรพชัยศรี",
+            6: "นาย พิศาล กิตติเยาวมาลย์",
+            7: "นาย ภาสพงศ์ ไชยวิริยะวาณิชย์",
+            8: "นาย วีรพจน์ ลือประสิทธิ์สกุล",
+            9: "นาย ชัชชาติ สิทธิพันธุ์",
+            10: "นาย ชัยวัฒน์ สถาวรวิจิตร",
+            11: "นาย ประยูร ครองยศ",
+            12: "พลตำรวจโท ชาญเทพ เสสะเวช",
+            13: "นาย คมสัน พันธุ์วิชาติกุล",
+            14: "นาง มัลลิกา บุญมีตระกูล มหาสุข",
+            15: "นาย โอฬาร ตั้งตราตระกูล",
+            16: "นางสาว ศรีรัฏฐ์ ช่างเพ็ชร์",
+            17: "นางสาว ลลนา มงคลหัสดินทร์",
+            18: "นาย สมชัย เจริญวรเกียรติ"
+        };
+        const GOV_MAX_CANDIDATES = 18; // จำนวนผู้สมัคร ผู้ว่าฯ
+
+        const COUNCIL_NAMES = {
+            1: "ว่าที่ร้อยโท ชิตพงศ์ ขัตตพงษ์",
+            2: "นายวรวิทย์ ฉายสุวรรณ์",
+            3: "นายนที ศิริธรรมวัฒน์",
+            4: "นายณัฐกวีร์ รุ่งจิรดากานต์",
+            5: "นายกวี ณ ลำปาง",
+            6: "นายกิตติคุณ ชื่นแย้ม",
+            7: "นายอนุชาญ กวางทอง"
+        };
+        const COUNCIL_MAX_CANDIDATES = 7; // จำนวนผู้สมัคร ส.ก.
+        // ==========================================
+
         let govChartInstance = null;
         let councilChartInstance = null;
 
-        // ฟังก์ชันจัดรูปแบบตัวเลข (ใส่คอมม่า)
         const formatNum = (num) => new Intl.NumberFormat('th-TH').format(num || 0);
 
-        // ดึงข้อมูลจาก API (รับพารามิเตอร์ isAuto เพื่อเช็คว่าโหลดออโต้หรือกดเอง)
-        async function fetchData(isAuto = false) {
-            // ถ้าไม่ได้ออโต้รีเฟรช (กดปุ่มเอง) ถึงจะแสดงไอคอนหมุนที่ปุ่ม
-            if (!isAuto) showLoading(true);
+        // ดึงข้อมูลจาก API (isManual = เช็คว่าผู้ใช้กดปุ่มเองหรือไม่)
+        async function fetchData(isManual = false) {
+            // ถ้าเป็นการกดปุ่มรีเฟรชเอง ให้แสดงไอคอนหมุน
+            if (isManual) {
+                document.getElementById('refresh-icon').classList.add('fa-spin');
+            }
             hideError();
             
             try {
-                // เติม ?t=เวลาปัจจุบัน ต่อท้าย URL เพื่อบังคับให้ดึงข้อมูลใหม่เสมอ ป้องกันเบราว์เซอร์จำค่าเก่า
-                const noCacheUrl = `${API_URL}?t=${new Date().getTime()}`;
-                const response = await fetch(noCacheUrl, { cache: 'no-cache' });
+                const response = await fetch(API_URL);
                 if (!response.ok) throw new Error('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้');
                 
                 const json = await response.json();
@@ -234,17 +247,20 @@
                 
             } catch (error) {
                 console.error("Fetch error:", error);
-                // แสดง Error เฉพาะเมื่อไม่ได้โหลดอัตโนมัติ เพื่อไม่ให้รบกวนเวลาปล่อยจอกราฟทิ้งไว้
-                if (!isAuto) showError("เกิดข้อผิดพลาดในการโหลดข้อมูล: " + error.message);
+                showError("เกิดข้อผิดพลาดในการโหลดข้อมูล: " + error.message);
             } finally {
-                if (!isAuto) showLoading(false);
+                // หยุดหมุนไอคอนเมื่อโหลดเสร็จ
+                if (isManual) {
+                    setTimeout(() => document.getElementById('refresh-icon').classList.remove('fa-spin'), 500);
+                }
             }
         }
 
         // ประมวลผลข้อมูลและแสดงผล
         function processAndRender(data) {
-            const govAggregated = aggregateData(data.governor);
-            const councilAggregated = aggregateData(data.council);
+            // ส่งจำนวนผู้สมัครสูงสุดไปด้วย เพื่อสร้างตารางรอ
+            const govAggregated = aggregateData(data.governor, GOV_MAX_CANDIDATES);
+            const councilAggregated = aggregateData(data.council, COUNCIL_MAX_CANDIDATES);
 
             // อัปเดตข้อมูลผู้ว่าฯ (ส่ง 'A' เป็นตัวนำหน้าชื่อไฟล์รูป)
             updateSummaryCards('gov', govAggregated);
@@ -257,34 +273,46 @@
             renderChart('councilChart', councilAggregated, 'คะแนน ส.ก.', 'council');
         }
 
-        // รวมคะแนนจากทุกหน่วย
-        function aggregateData(typeData) {
+        // รวมคะแนนจากทุกหน่วย และสร้างตารางเบอร์ล่วงหน้า
+        function aggregateData(typeData, defaultMaxCand) {
             let totalVoters = 0, goodBallots = 0, badBallots = 0, noVote = 0;
             let scoresDict = {};
 
-            // วนลูปทุกๆ key (แขวง-หน่วย)
-            for (const key in typeData) {
-                const station = typeData[key];
-                
-                totalVoters += parseInt(station.turnedOutVoters) || 0;
-                goodBallots += parseInt(station.goodBallots) || 0;
-                badBallots += parseInt(station.badBallots) || 0;
-                noVote += parseInt(station.noVoteBallots) || 0;
+            // 1. สร้างรายการเบอร์ผู้สมัครรอไว้เลยตั้งแต่เบอร์ 1 ถึงค่าที่ตั้งไว้ (เริ่มต้นที่ 0 คะแนน)
+            for (let i = 1; i <= defaultMaxCand; i++) {
+                scoresDict[i] = 0;
+            }
 
-                // รวมคะแนนผู้สมัครแต่ละเบอร์
-                if (station.scores) {
-                    for (const candNo in station.scores) {
-                        if (!scoresDict[candNo]) scoresDict[candNo] = 0;
-                        scoresDict[candNo] += parseInt(station.scores[candNo]) || 0;
+            // 2. วนลูปทุกๆ key (แขวง-หน่วย)
+            if (typeData) {
+                for (const key in typeData) {
+                    const station = typeData[key];
+                    
+                    totalVoters += parseInt(station.turnedOutVoters) || 0;
+                    goodBallots += parseInt(station.goodBallots) || 0;
+                    badBallots += parseInt(station.badBallots) || 0;
+                    noVote += parseInt(station.noVoteBallots) || 0;
+
+                    // รวมคะแนนผู้สมัครแต่ละเบอร์
+                    if (station.scores) {
+                        for (const candNo in station.scores) {
+                            if (scoresDict[candNo] === undefined) scoresDict[candNo] = 0;
+                            scoresDict[candNo] += parseInt(station.scores[candNo]) || 0;
+                        }
                     }
                 }
             }
 
-            // แปลง object เป็น array และจัดเรียงคะแนนจากมากไปน้อย
+            // 3. แปลง object เป็น array และจัดเรียงคะแนน
             let candidates = Object.keys(scoresDict).map(no => ({
-                no: no,
+                no: parseInt(no),
                 score: scoresDict[no]
-            })).sort((a, b) => b.score - a.score);
+            })).sort((a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score; // เรียงคะแนนจากมากไปน้อย
+                }
+                return a.no - b.no; // ถ้าคะแนนเท่ากัน ให้เรียงเบอร์ 1,2,3...
+            });
 
             return { totalVoters, goodBallots, badBallots, noVote, candidates };
         }
@@ -304,18 +332,18 @@
 
             const totalGoodScore = data.candidates.reduce((sum, c) => sum + c.score, 0);
 
-            if (data.candidates.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-400">ยังไม่มีข้อมูลคะแนน</td></tr>';
-                return;
-            }
-
             data.candidates.forEach((cand, index) => {
                 const percent = totalGoodScore > 0 ? ((cand.score / totalGoodScore) * 100).toFixed(2) : '0.00';
                 
-                // ตกแต่งอันดับ 1 ให้เด่นขึ้น
+                // คนที่ได้ที่ 1 และมีคะแนนมากกว่า 0 ถึงจะได้มงกุฎ
                 const isWinner = index === 0 && cand.score > 0;
                 const rowClass = isWinner ? 'bg-amber-50/50' : 'hover:bg-slate-50 transition-colors';
                 const badge = isWinner ? '<i class="fa-solid fa-crown text-amber-500 mr-2 text-xs"></i>' : '';
+                
+                // ดึงชื่อผู้สมัคร
+                const candName = (prefix === 'gov') 
+                    ? (GOV_NAMES[cand.no] || `ผู้สมัครเบอร์ ${cand.no}`) 
+                    : (COUNCIL_NAMES[cand.no] || `ผู้สมัครเบอร์ ${cand.no}`);
                 
                 const tr = document.createElement('tr');
                 tr.className = rowClass;
@@ -325,15 +353,19 @@
                             ${cand.no}
                         </span>
                     </td>
-                    <td class="py-3 px-3 border-b text-slate-700 font-medium align-middle">
+                    <td class="py-3 px-3 border-b text-slate-700 align-middle">
                         <div class="flex items-center gap-3">
                             <div class="relative w-10 h-10 shrink-0">
+                                <!-- รูปภาพพื้นหลัง กรณีที่โหลดไฟล์รูปผู้สมัครไม่สำเร็จ -->
                                 <div class="absolute inset-0 flex items-center justify-center bg-slate-200 rounded-full text-slate-400 border border-slate-300">
                                     <i class="fa-solid fa-user"></i>
                                 </div>
+                                <!-- รูปผู้สมัคร (จะซ่อนตัวเองอัตโนมัติถ้าหาไฟล์ไม่เจอ) -->
                                 <img src="${imgPrefix}${cand.no}.jpg" alt="เบอร์ ${cand.no}" class="relative w-10 h-10 rounded-full object-cover shadow-sm border border-slate-200 bg-white" onerror="this.style.display='none'">
                             </div>
-                            <span>${badge}ผู้สมัครเบอร์ ${cand.no}</span>
+                            <div class="flex flex-col">
+                                <span class="font-semibold text-sm md:text-base">${badge}${candName}</span>
+                            </div>
                         </div>
                     </td>
                     <td class="py-3 px-3 border-b text-right font-bold text-slate-800 text-lg align-middle">
@@ -347,99 +379,89 @@
             });
         }
 
-        // สร้าง/อัปเดตกราฟด้วย Chart.js (แสดงเฉพาะ Top 5)
+        // สร้าง/อัปเดตกราฟด้วย Chart.js
         function renderChart(canvasId, data, labelTitle, type) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             
-            // เอาแค่ 5 อันดับแรกมาแสดงในกราฟเพื่อไม่ให้รกเกินไป
+            // เอาแค่ 5 อันดับแรกมาแสดงในกราฟ
             const top5 = data.candidates.slice(0, 5);
             
             const labels = top5.map(c => `เบอร์ ${c.no}`);
             const chartData = top5.map(c => c.score);
             
-            // เลือกโทนสีตามประเภท
             const baseColors = type === 'gov' 
                 ? ['rgba(2, 132, 199, 0.8)', 'rgba(14, 165, 233, 0.7)', 'rgba(56, 189, 248, 0.6)', 'rgba(125, 211, 252, 0.5)', 'rgba(186, 230, 253, 0.4)']
                 : ['rgba(22, 163, 74, 0.8)', 'rgba(34, 197, 94, 0.7)', 'rgba(74, 222, 128, 0.6)', 'rgba(134, 239, 172, 0.5)', 'rgba(187, 247, 208, 0.4)'];
 
-            // **ส่วนที่ทำให้อัปเดตเนียนๆ** : ถ้ามีกราฟอยู่แล้ว ให้อัปเดตแค่ข้อมูล กราฟจะขยับแบบแอนิเมชัน ไม่ลบทิ้ง
-            let existingChart = (canvasId === 'govChart') ? govChartInstance : councilChartInstance;
+            // ถ้ามีกราฟอยู่แล้ว ให้อัปเดตข้อมูลแบบเนียนๆ
+            let chartInstance = canvasId === 'govChart' ? govChartInstance : councilChartInstance;
 
-            if (existingChart) {
-                existingChart.data.labels = labels;
-                existingChart.data.datasets[0].data = chartData;
-                existingChart.update(); // สั่งอัปเดตแบบนุ่มนวล
-                return; 
-            }
-
-            // ถ้าเปิดหน้าเว็บครั้งแรก ถึงจะสร้างกราฟใหม่
-            const newChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'คะแนนโหวต',
-                        data: chartData,
-                        backgroundColor: baseColors,
-                        borderWidth: 0,
-                        borderRadius: 6,
-                        barPercentage: 0.6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleFont: { family: 'Prompt', size: 14 },
-                            bodyFont: { family: 'Prompt', size: 14, weight: 'bold' },
-                            padding: 12,
-                            cornerRadius: 8,
-                            callbacks: {
-                                label: function(context) {
-                                    return ' คะแนน: ' + formatNum(context.raw);
-                                }
-                            }
-                        }
+            if (chartInstance) {
+                chartInstance.data.labels = labels;
+                chartInstance.data.datasets[0].data = chartData;
+                chartInstance.update();
+            } else {
+                // สร้างใหม่ถ้ายังไม่มี
+                const newChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'คะแนนโหวต',
+                            data: chartData,
+                            backgroundColor: baseColors,
+                            borderWidth: 0,
+                            borderRadius: 6,
+                            barPercentage: 0.6
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(0,0,0,0.05)', borderDash: [5, 5] },
-                            ticks: { 
-                                family: 'Prompt',
-                                callback: function(value) {
-                                    if (value >= 1000) return value / 1000 + 'k';
-                                    return value;
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                titleFont: { family: 'Prompt', size: 14 },
+                                bodyFont: { family: 'Prompt', size: 14, weight: 'bold' },
+                                padding: 12,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    title: function(context) {
+                                        const no = context[0].label.replace('เบอร์ ', '');
+                                        const name = type === 'gov' ? GOV_NAMES[no] : COUNCIL_NAMES[no];
+                                        return name ? `เบอร์ ${no} - ${name}` : context[0].label;
+                                    },
+                                    label: function(context) { return ' คะแนน: ' + formatNum(context.raw); }
                                 }
                             }
                         },
-                        x: {
-                            grid: { display: false },
-                            ticks: { family: 'Prompt', font: { weight: 'bold' } }
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(0,0,0,0.05)', borderDash: [5, 5] },
+                                ticks: { 
+                                    family: 'Prompt',
+                                    callback: function(value) {
+                                        if (value >= 1000) return value / 1000 + 'k';
+                                        return value;
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { family: 'Prompt', font: { weight: 'bold' } }
+                            }
+                        },
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeOutQuart'
                         }
-                    },
-                    animation: {
-                        duration: 1000,
-                        easing: 'easeOutQuart'
                     }
-                }
-            });
+                });
 
-            if (canvasId === 'govChart') govChartInstance = newChart;
-            else councilChartInstance = newChart;
-        }
-
-        // ควบคุม UI สถานะต่างๆ
-        function showLoading(show) {
-            // ลบการแสดงหน้าจอ overlay ออก ให้เหลือแค่ไอคอนหมุนที่ปุ่ม
-            const icon = document.getElementById('refresh-icon');
-            if (show) {
-                icon.classList.add('fa-spin');
-            } else {
-                icon.classList.remove('fa-spin');
+                if (canvasId === 'govChart') govChartInstance = newChart;
+                else councilChartInstance = newChart;
             }
         }
 
@@ -457,15 +479,13 @@
         function updateTimestamp() {
             const now = new Date();
             const timeString = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            document.getElementById('last-updated').innerText = `อัปเดตล่าสุด: วันนี้ เวลา ${timeString} น.`;
+            document.getElementById('last-updated').innerText = `วันนี้ เวลา ${timeString} น.`;
         }
 
-        // โหลดข้อมูลครั้งแรกเมื่อเปิดหน้าเว็บ และตั้งเวลารีเฟรช
+        // โหลดข้อมูลเมื่อเปิดเว็บ และตั้งเวลาอัปเดตเงียบๆ ทุก 1 นาที
         window.addEventListener('DOMContentLoaded', () => {
-            fetchData(); // ครั้งแรกโหลดปกติ
-            
-            // ตั้งค่าให้อัปเดตอัตโนมัติแบบลับๆ (ส่ง parameter true) ทุกๆ 1 นาที
-            setInterval(() => fetchData(true), 60000); 
+            fetchData(false); // โหลดครั้งแรก
+            setInterval(() => fetchData(false), 60000); // โหลดอัตโนมัติทุก 60 วิ (ไม่แสดงไอคอนหมุน)
         });
 
     </script>
