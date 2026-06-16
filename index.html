@@ -107,10 +107,11 @@
                         <table class="w-full text-left border-collapse">
                             <thead class="bg-slate-50 sticky top-0 z-10">
                                 <tr>
+                                    <th class="py-2 px-3 text-sm font-medium text-slate-500 border-b w-12 text-center">ที่</th>
                                     <th class="py-2 px-3 text-sm font-medium text-slate-500 border-b w-16 text-center">เบอร์</th>
                                     <th class="py-2 px-3 text-sm font-medium text-slate-500 border-b">ผู้สมัคร</th>
-                                    <th class="py-2 px-3 text-sm font-medium text-slate-500 border-b text-right">คะแนนโหวต</th>
-                                    <th class="py-2 px-3 text-sm font-medium text-slate-500 border-b text-right w-24">%</th>
+                                    <th class="py-2 px-3 text-sm font-medium text-slate-500 border-b text-right">คะแนน</th>
+                                    <th class="py-2 px-3 text-sm font-medium text-slate-500 border-b text-right w-20">%</th>
                                 </tr>
                             </thead>
                             <tbody id="gov-table-body" class="divide-y divide-slate-100">
@@ -158,10 +159,11 @@
                         <table class="w-full text-left border-collapse">
                             <thead class="bg-slate-50 sticky top-0 z-10">
                                 <tr>
+                                    <th class="py-2 px-3 text-sm font-medium text-slate-500 border-b w-12 text-center">ที่</th>
                                     <th class="py-2 px-3 text-sm font-medium text-slate-500 border-b w-16 text-center">เบอร์</th>
                                     <th class="py-2 px-3 text-sm font-medium text-slate-500 border-b">ผู้สมัคร</th>
-                                    <th class="py-2 px-3 text-sm font-medium text-slate-500 border-b text-right">คะแนนโหวต</th>
-                                    <th class="py-2 px-3 text-sm font-medium text-slate-500 border-b text-right w-24">%</th>
+                                    <th class="py-2 px-3 text-sm font-medium text-slate-500 border-b text-right">คะแนน</th>
+                                    <th class="py-2 px-3 text-sm font-medium text-slate-500 border-b text-right w-20">%</th>
                                 </tr>
                             </thead>
                             <tbody id="council-table-body" class="divide-y divide-slate-100">
@@ -348,6 +350,9 @@
                 const tr = document.createElement('tr');
                 tr.className = rowClass;
                 tr.innerHTML = `
+                    <td class="py-3 px-3 border-b text-center font-bold text-slate-400">
+                        ${index + 1}
+                    </td>
                     <td class="py-3 px-3 border-b text-center align-middle">
                         <span class="inline-flex items-center justify-center w-8 h-8 rounded-full ${isWinner ? 'bg-amber-500 text-white shadow-md' : 'bg-slate-200 text-slate-700'} font-bold text-sm">
                             ${cand.no}
@@ -356,11 +361,9 @@
                     <td class="py-3 px-3 border-b text-slate-700 align-middle">
                         <div class="flex items-center gap-3">
                             <div class="relative w-10 h-10 shrink-0">
-                                <!-- รูปภาพพื้นหลัง กรณีที่โหลดไฟล์รูปผู้สมัครไม่สำเร็จ -->
                                 <div class="absolute inset-0 flex items-center justify-center bg-slate-200 rounded-full text-slate-400 border border-slate-300">
                                     <i class="fa-solid fa-user"></i>
                                 </div>
-                                <!-- รูปผู้สมัคร (จะซ่อนตัวเองอัตโนมัติถ้าหาไฟล์ไม่เจอ) -->
                                 <img src="${imgPrefix}${cand.no}.jpg" alt="เบอร์ ${cand.no}" class="relative w-10 h-10 rounded-full object-cover shadow-sm border border-slate-200 bg-white" onerror="this.style.display='none'">
                             </div>
                             <div class="flex flex-col">
