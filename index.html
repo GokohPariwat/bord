@@ -39,12 +39,23 @@
 
     <header class="bg-gradient-to-r from-slate-800 to-slate-900 text-white py-6 px-6 shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 w-full md:w-auto">
                 <!-- โลโก้ มุมบนซ้าย -->
-                <img src="Logo.png" alt="Logo" class="w-14 h-14 bg-white rounded-full p-1 shadow-sm object-contain" onerror="this.style.display='none'">
-                <div>
-                    <h1 class="text-2xl font-bold tracking-wide text-center md:text-left">แดชบอร์ดผลการเลือกตั้ง <span class="text-blue-400">LIVE</span></h1>
-                    <p class="text-sm text-slate-300 opacity-90 mt-1 text-center md:text-left">สรุปผลคะแนน ผู้ว่าราชการกรุงเทพมหานคร และ สมาชิกสภากรุงเทพมหานคร (ส.ก.) สำนักงานเขตพญาไท</p>
+                <img src="Logo.png" alt="Logo" class="w-14 h-14 bg-white rounded-full p-1 shadow-sm object-contain hidden sm:block" onerror="this.style.display='none'">
+                <div class="w-full text-center md:text-left">
+                    <h1 class="text-2xl font-bold tracking-wide">แดชบอร์ดผลการเลือกตั้ง <span class="text-blue-400">LIVE</span></h1>
+                    
+                    <!-- ส่วนที่เพิ่มใหม่: ข้อความผลอย่างไม่เป็นทางการ -->
+                    <p class="text-sm font-semibold text-rose-400 mt-1 drop-shadow-sm"><i class="fa-solid fa-circle-info mr-1"></i> ผลคะแนนอย่างไม่เป็นทางการ</p>
+                    <p class="text-xs md:text-sm text-slate-300 opacity-90 mt-1">สรุปผลคะแนน ผู้ว่าราชการกรุงเทพมหานคร และ สมาชิกสภากรุงเทพมหานคร (ส.ก.) สำนักงานเขตพญาไท</p>
+                    
+                    <!-- ส่วนที่เพิ่มใหม่: แถบเปอร์เซ็นต์การบันทึกคะแนน -->
+                    <div class="mt-3 bg-slate-700/50 rounded-full h-5 w-full max-w-md relative overflow-hidden border border-slate-600">
+                        <div id="station-progress-bar" class="bg-gradient-to-r from-blue-500 to-emerald-400 h-full rounded-full transition-all duration-1000 ease-out" style="width: 0%;"></div>
+                        <p id="station-progress-text" class="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-white drop-shadow-md">
+                            กำลังโหลดเปอร์เซ็นต์หน่วยเลือกตั้ง...
+                        </p>
+                    </div>
                 </div>
             </div>
             
@@ -115,7 +126,7 @@
                                 </tr>
                             </thead>
                             <tbody id="gov-table-body" class="divide-y divide-slate-100">
-                                <tr><td colspan="4" class="text-center py-4 text-slate-400">กำลังรอข้อมูล...</td></tr>
+                                <tr><td colspan="5" class="text-center py-4 text-slate-400">กำลังรอข้อมูล...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -167,7 +178,7 @@
                                 </tr>
                             </thead>
                             <tbody id="council-table-body" class="divide-y divide-slate-100">
-                                <tr><td colspan="4" class="text-center py-4 text-slate-400">กำลังรอข้อมูล...</td></tr>
+                                <tr><td colspan="5" class="text-center py-4 text-slate-400">กำลังรอข้อมูล...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -186,6 +197,9 @@
         const API_URL = 'https://script.google.com/macros/s/AKfycbw4JXalISmJDW9SlCSOlRj5tHY8qVtBU0AgP4vkHrR1W-8DighUkpoPwLNeoslvl6uSmQ/exec';
         
         // ==========================================
+        // ข้อมูลตัวแปรหลัก
+        const TOTAL_STATIONS = 80; // เพิ่มตัวแปรหน่วยเลือกตั้งทั้งหมด 80 หน่วย
+
         // รายชื่อผู้สมัครและจำนวนผู้สมัครสูงสุด
         const GOV_NAMES = {
             1: "หม่อมหลวง กรกสิวัฒน์ เกษมศรี",
@@ -207,7 +221,7 @@
             17: "นางสาว ลลนา มงคลหัสดินทร์",
             18: "นาย สมชัย เจริญวรเกียรติ"
         };
-        const GOV_MAX_CANDIDATES = 18; // จำนวนผู้สมัคร ผู้ว่าฯ
+        const GOV_MAX_CANDIDATES = 18; 
 
         const COUNCIL_NAMES = {
             1: "ว่าที่ร้อยโท ชิตพงศ์ ขัตตพงษ์",
@@ -218,7 +232,7 @@
             6: "นายกิตติคุณ ชื่นแย้ม",
             7: "นายอนุชาญ กวางทอง"
         };
-        const COUNCIL_MAX_CANDIDATES = 7; // จำนวนผู้สมัคร ส.ก.
+        const COUNCIL_MAX_CANDIDATES = 7; 
         // ==========================================
 
         let govChartInstance = null;
@@ -226,9 +240,8 @@
 
         const formatNum = (num) => new Intl.NumberFormat('th-TH').format(num || 0);
 
-        // ดึงข้อมูลจาก API (isManual = เช็คว่าผู้ใช้กดปุ่มเองหรือไม่)
+        // ดึงข้อมูลจาก API
         async function fetchData(isManual = false) {
-            // ถ้าเป็นการกดปุ่มรีเฟรชเอง ให้แสดงไอคอนหมุน
             if (isManual) {
                 document.getElementById('refresh-icon').classList.add('fa-spin');
             }
@@ -251,7 +264,6 @@
                 console.error("Fetch error:", error);
                 showError("เกิดข้อผิดพลาดในการโหลดข้อมูล: " + error.message);
             } finally {
-                // หยุดหมุนไอคอนเมื่อโหลดเสร็จ
                 if (isManual) {
                     setTimeout(() => document.getElementById('refresh-icon').classList.remove('fa-spin'), 500);
                 }
@@ -260,32 +272,45 @@
 
         // ประมวลผลข้อมูลและแสดงผล
         function processAndRender(data) {
-            // ส่งจำนวนผู้สมัครสูงสุดไปด้วย เพื่อสร้างตารางรอ
+            // คำนวณความคืบหน้าของหน่วยเลือกตั้ง (ดูจากจำนวน key ของข้อมูลผู้ว่าฯ)
+            let countedStations = 0;
+            if (data.governor) {
+                countedStations = Object.keys(data.governor).length;
+            } else if (data.council) {
+                countedStations = Object.keys(data.council).length;
+            }
+            
+            // ป้องกันเกิน 80 ในกรณีข้อมูลผิดพลาด
+            if (countedStations > TOTAL_STATIONS) countedStations = TOTAL_STATIONS;
+            
+            const progressPercent = ((countedStations / TOTAL_STATIONS) * 100).toFixed(1);
+            
+            // อัปเดต Progress Bar และข้อความ
+            document.getElementById('station-progress-bar').style.width = `${progressPercent}%`;
+            document.getElementById('station-progress-text').innerText = `ความคืบหน้าการนับคะแนน ${countedStations}/${TOTAL_STATIONS} หน่วย (${progressPercent}%)`;
+
+
             const govAggregated = aggregateData(data.governor, GOV_MAX_CANDIDATES);
             const councilAggregated = aggregateData(data.council, COUNCIL_MAX_CANDIDATES);
 
-            // อัปเดตข้อมูลผู้ว่าฯ (ส่ง 'A' เป็นตัวนำหน้าชื่อไฟล์รูป)
             updateSummaryCards('gov', govAggregated);
             updateTable('gov', govAggregated, 'A');
             renderChart('govChart', govAggregated, 'คะแนนผู้ว่าฯ', 'gov');
 
-            // อัปเดตข้อมูล ส.ก. (ส่ง 'B' เป็นตัวนำหน้าชื่อไฟล์รูป)
             updateSummaryCards('council', councilAggregated);
             updateTable('council', councilAggregated, 'B');
             renderChart('councilChart', councilAggregated, 'คะแนน ส.ก.', 'council');
         }
 
-        // รวมคะแนนจากทุกหน่วย และสร้างตารางเบอร์ล่วงหน้า
+        // รวมคะแนนจากทุกหน่วย
         function aggregateData(typeData, defaultMaxCand) {
             let totalVoters = 0, goodBallots = 0, badBallots = 0, noVote = 0;
             let scoresDict = {};
 
-            // 1. สร้างรายการเบอร์ผู้สมัครรอไว้เลยตั้งแต่เบอร์ 1 ถึงค่าที่ตั้งไว้ (เริ่มต้นที่ 0 คะแนน)
             for (let i = 1; i <= defaultMaxCand; i++) {
                 scoresDict[i] = 0;
             }
 
-            // 2. วนลูปทุกๆ key (แขวง-หน่วย)
             if (typeData) {
                 for (const key in typeData) {
                     const station = typeData[key];
@@ -295,7 +320,6 @@
                     badBallots += parseInt(station.badBallots) || 0;
                     noVote += parseInt(station.noVoteBallots) || 0;
 
-                    // รวมคะแนนผู้สมัครแต่ละเบอร์
                     if (station.scores) {
                         for (const candNo in station.scores) {
                             if (scoresDict[candNo] === undefined) scoresDict[candNo] = 0;
@@ -305,21 +329,19 @@
                 }
             }
 
-            // 3. แปลง object เป็น array และจัดเรียงคะแนน
             let candidates = Object.keys(scoresDict).map(no => ({
                 no: parseInt(no),
                 score: scoresDict[no]
             })).sort((a, b) => {
                 if (b.score !== a.score) {
-                    return b.score - a.score; // เรียงคะแนนจากมากไปน้อย
+                    return b.score - a.score; 
                 }
-                return a.no - b.no; // ถ้าคะแนนเท่ากัน ให้เรียงเบอร์ 1,2,3...
+                return a.no - b.no; 
             });
 
             return { totalVoters, goodBallots, badBallots, noVote, candidates };
         }
 
-        // อัปเดตตัวเลขสรุปผล
         function updateSummaryCards(prefix, data) {
             document.getElementById(`${prefix}-total-voters`).innerText = formatNum(data.totalVoters);
             document.getElementById(`${prefix}-good-ballots`).innerText = formatNum(data.goodBallots);
@@ -327,7 +349,6 @@
             document.getElementById(`${prefix}-no-vote`).innerText = formatNum(data.noVote);
         }
 
-        // อัปเดตตารางลำดับคะแนน
         function updateTable(prefix, data, imgPrefix) {
             const tbody = document.getElementById(`${prefix}-table-body`);
             tbody.innerHTML = '';
@@ -337,12 +358,10 @@
             data.candidates.forEach((cand, index) => {
                 const percent = totalGoodScore > 0 ? ((cand.score / totalGoodScore) * 100).toFixed(2) : '0.00';
                 
-                // คนที่ได้ที่ 1 และมีคะแนนมากกว่า 0 ถึงจะได้มงกุฎ
                 const isWinner = index === 0 && cand.score > 0;
                 const rowClass = isWinner ? 'bg-amber-50/50' : 'hover:bg-slate-50 transition-colors';
                 const badge = isWinner ? '<i class="fa-solid fa-crown text-amber-500 mr-2 text-xs"></i>' : '';
                 
-                // ดึงชื่อผู้สมัคร
                 const candName = (prefix === 'gov') 
                     ? (GOV_NAMES[cand.no] || `ผู้สมัครเบอร์ ${cand.no}`) 
                     : (COUNCIL_NAMES[cand.no] || `ผู้สมัครเบอร์ ${cand.no}`);
@@ -382,11 +401,9 @@
             });
         }
 
-        // สร้าง/อัปเดตกราฟด้วย Chart.js
         function renderChart(canvasId, data, labelTitle, type) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             
-            // เอาแค่ 5 อันดับแรกมาแสดงในกราฟ
             const top5 = data.candidates.slice(0, 5);
             
             const labels = top5.map(c => `เบอร์ ${c.no}`);
@@ -396,7 +413,6 @@
                 ? ['rgba(2, 132, 199, 0.8)', 'rgba(14, 165, 233, 0.7)', 'rgba(56, 189, 248, 0.6)', 'rgba(125, 211, 252, 0.5)', 'rgba(186, 230, 253, 0.4)']
                 : ['rgba(22, 163, 74, 0.8)', 'rgba(34, 197, 94, 0.7)', 'rgba(74, 222, 128, 0.6)', 'rgba(134, 239, 172, 0.5)', 'rgba(187, 247, 208, 0.4)'];
 
-            // ถ้ามีกราฟอยู่แล้ว ให้อัปเดตข้อมูลแบบเนียนๆ
             let chartInstance = canvasId === 'govChart' ? govChartInstance : councilChartInstance;
 
             if (chartInstance) {
@@ -404,7 +420,6 @@
                 chartInstance.data.datasets[0].data = chartData;
                 chartInstance.update();
             } else {
-                // สร้างใหม่ถ้ายังไม่มี
                 const newChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
@@ -487,8 +502,8 @@
 
         // โหลดข้อมูลเมื่อเปิดเว็บ และตั้งเวลาอัปเดตเงียบๆ ทุก 1 นาที
         window.addEventListener('DOMContentLoaded', () => {
-            fetchData(false); // โหลดครั้งแรก
-            setInterval(() => fetchData(false), 30000); // โหลดอัตโนมัติทุก 60 วิ (ไม่แสดงไอคอนหมุน)
+            fetchData(false); 
+            setInterval(() => fetchData(false), 60000); 
         });
 
     </script>
