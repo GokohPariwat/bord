@@ -7,6 +7,9 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- เพิ่ม Plugin สำหรับแสดงตัวเลขบนกราฟ -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -210,15 +213,17 @@
     </footer>
 
     <script>
+        // ลงทะเบียน ChartDataLabels เพื่อให้ทำงานกับ Chart.js
+        Chart.register(ChartDataLabels);
+
         // URL ของ Google Apps Script ของคุณ
         const API_URL = 'https://script.google.com/macros/s/AKfycbw4JXalISmJDW9SlCSOlRj5tHY8qVtBU0AgP4vkHrR1W-8DighUkpoPwLNeoslvl6uSmQ/exec';
         
         // ==========================================
         // ข้อมูลตัวแปรหลัก
-        const GOV_TOTAL_STATIONS = 80; // จำนวนหน่วยเลือกตั้งทั้งหมดของผู้ว่าฯ
-        const COUNCIL_TOTAL_STATIONS = 80; // จำนวนหน่วยเลือกตั้งทั้งหมดของ ส.ก.
+        const GOV_TOTAL_STATIONS = 80; 
+        const COUNCIL_TOTAL_STATIONS = 80; 
 
-        // รายชื่อผู้สมัครและจำนวนผู้สมัครสูงสุด
         const GOV_NAMES = {
             1: "หม่อมหลวง กรกสิวัฒน์ เกษมศรี",
             2: "นาย สมัย ละเลิศ",
@@ -288,48 +293,40 @@
             }
         }
 
-        // ประมวลผลข้อมูลและแสดงผล
         function processAndRender(data) {
-            // 1. คำนวณความคืบหน้า ผู้ว่าฯ
             let govCounted = 0;
             if (data.governor) {
                 govCounted = Object.keys(data.governor).length;
             }
-            if (govCounted > GOV_TOTAL_STATIONS) govCounted = GOV_TOTAL_STATIONS; // ป้องกันเกิน
+            if (govCounted > GOV_TOTAL_STATIONS) govCounted = GOV_TOTAL_STATIONS; 
             const govProgressPercent = ((govCounted / GOV_TOTAL_STATIONS) * 100).toFixed(1);
             
-            // อัปเดต Progress Bar ผู้ว่าฯ
             document.getElementById('gov-progress-bar').style.width = `${govProgressPercent}%`;
             document.getElementById('gov-progress-text').innerText = `${govCounted}/${GOV_TOTAL_STATIONS} หน่วย (${govProgressPercent}%)`;
 
-
-            // 2. คำนวณความคืบหน้า ส.ก.
             let councilCounted = 0;
             if (data.council) {
                 councilCounted = Object.keys(data.council).length;
             }
-            if (councilCounted > COUNCIL_TOTAL_STATIONS) councilCounted = COUNCIL_TOTAL_STATIONS; // ป้องกันเกิน
+            if (councilCounted > COUNCIL_TOTAL_STATIONS) councilCounted = COUNCIL_TOTAL_STATIONS;
             const councilProgressPercent = ((councilCounted / COUNCIL_TOTAL_STATIONS) * 100).toFixed(1);
 
-            // อัปเดต Progress Bar ส.ก.
             document.getElementById('council-progress-bar').style.width = `${councilProgressPercent}%`;
             document.getElementById('council-progress-text').innerText = `${councilCounted}/${COUNCIL_TOTAL_STATIONS} หน่วย (${councilProgressPercent}%)`;
 
 
-            // ประมวลผลคะแนนผู้สมัคร
             const govAggregated = aggregateData(data.governor, GOV_MAX_CANDIDATES);
             const councilAggregated = aggregateData(data.council, COUNCIL_MAX_CANDIDATES);
 
             updateSummaryCards('gov', govAggregated);
             updateTable('gov', govAggregated, 'A');
-            renderChart('govChart', govAggregated, 'คะแนนผู้ว่าฯ', 'gov');
+            renderChart('govChart', govAggregated, 'gov');
 
             updateSummaryCards('council', councilAggregated);
             updateTable('council', councilAggregated, 'B');
-            renderChart('councilChart', councilAggregated, 'คะแนน ส.ก.', 'council');
+            renderChart('councilChart', councilAggregated, 'council');
         }
 
-        // รวมคะแนนจากทุกหน่วย
         function aggregateData(typeData, defaultMaxCand) {
             let totalVoters = 0, goodBallots = 0, badBallots = 0, noVote = 0;
             let scoresDict = {};
@@ -428,7 +425,7 @@
             });
         }
 
-        function renderChart(canvasId, data, labelTitle, type) {
+        function renderChart(canvasId, data, type) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             
             const top5 = data.candidates.slice(0, 5);
@@ -461,10 +458,29 @@
                         }]
                     },
                     options: {
+                        layout: {
+                            padding: {
+                                top: 30 // เพิ่มระยะขอบด้านบน เพื่อไม่ให้ตัวเลขถูกตัด
+                            }
+                        },
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
                             legend: { display: false },
+                            // ตั้งค่าการแสดงตัวเลขบนแท่งกราฟ (DataLabels)
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                formatter: function(value) {
+                                    return formatNum(value);
+                                },
+                                font: {
+                                    family: 'Prompt',
+                                    weight: 'bold',
+                                    size: 13
+                                },
+                                color: '#334155' // สีตัวอักษรบนแท่งกราฟ
+                            },
                             tooltip: {
                                 backgroundColor: 'rgba(15, 23, 42, 0.9)',
                                 titleFont: { family: 'Prompt', size: 14 },
