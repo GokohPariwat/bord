@@ -39,9 +39,9 @@
 </head>
 <body class="text-slate-800 antialiased bg-slate-50 flex flex-col min-h-screen lg:h-screen lg:overflow-hidden">
 
-    <!-- ซ่อนเครื่องเล่นเสียง อัตโนมัติและเล่นวนซ้ำ -->
-    <audio id="bg-music" loop>
-        <source src="votr.mp3" type="audio/mp3">
+    <!-- เปลี่ยนไฟล์เป็น vot.mp3 พร้อมตั้งค่าเล่นอัตโนมัติ (autoplay) และวนซ้ำ (loop) -->
+    <audio id="bg-music" autoplay loop>
+        <source src="votr.mp3" type="audio/mpeg">
     </audio>
 
     <header class="bg-gradient-to-r from-slate-800 to-slate-900 text-white py-3 lg:py-4 px-4 lg:px-6 shadow-md shrink-0 z-50">
@@ -51,7 +51,7 @@
                 <div class="w-full text-center md:text-left">
                     <h1 class="text-xl lg:text-2xl font-bold tracking-wide">แดชบอร์ดผลการเลือกตั้ง <span class="text-blue-400">LIVE</span></h1>
                     
-                    <p class="text-xs lg:text-sm font-semibold text-rose-400 mt-0.5 drop-shadow-sm"><i class="fa-solid fa-circle-info mr-1"></i> ผลคะแนนอย่างไม่เป็นทางการ</p>
+                    <p class="text-xs lg:text-sm font-semibold text-rose-400 mt-0.5 drop-shadow-sm"><i class="fa-solid fa-circle-info mr-1"></i> ผลคะแนนอย่างไม่เป็นทางการ **กำลังอยู่ในระหว่างทดสอบระบบ คะแนนที่เห็นยังไม่ใช่คะแนนจากผลการเลือกตั้ง**</p>
                     
                     <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl">
                         <div>
@@ -83,9 +83,9 @@
                 </div>
                 
                 <div class="flex items-center gap-2 shrink-0">
-                    <!-- ปุ่มเปิด-ปิดเสียงเพลง -->
+                    <!-- ปุ่มเปิด-ปิดเสียงเพลง (ตั้งค่าเริ่มต้นเป็นรูปเปิดเสียง) -->
                     <button onclick="toggleAudio()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 md:py-2 rounded-lg text-sm lg:text-base transition-all flex items-center justify-center min-w-[40px] shadow-sm" title="เปิด/ปิดเสียงเพลง">
-                        <i class="fa-solid fa-volume-xmark" id="audio-icon"></i>
+                        <i class="fa-solid fa-volume-high text-emerald-400" id="audio-icon"></i>
                     </button>
 
                     <button onclick="fetchData(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-sm lg:text-base font-medium transition-all flex items-center gap-2 shadow-sm shrink-0">
@@ -263,22 +263,31 @@
 
         const formatNum = (num) => new Intl.NumberFormat('th-TH').format(num || 0);
 
-        // ระบบเปิดปิดเสียงเพลง
         function initAudio() {
             const bgMusic = document.getElementById('bg-music');
             const audioIcon = document.getElementById('audio-icon');
             
-            // สั่งเล่นเพลงทันที (ถ้าเบราว์เซอร์อนุญาต)
-            const playPromise = bgMusic.play();
+            // สั่งเล่นเพลง
+            let playPromise = bgMusic.play();
             
             if (playPromise !== undefined) {
                 playPromise.then(_ => {
-                    // เล่นสำเร็จ
-                    audioIcon.className = 'fa-solid fa-volume-high text-emerald-400';
+                    // เล่นสำเร็จ ไอคอนแสดงผลถูกต้องอยู่แล้ว (เปิดเสียง)
                 }).catch(error => {
-                    // เบราว์เซอร์บล็อกการเล่นอัตโนมัติ (ปกติสำหรับ Chrome/Safari)
-                    console.log("Browser blocked autoplay. Waiting for user interaction.");
+                    // เบราว์เซอร์บล็อก เปลี่ยนไอคอนเป็นกากบาทเพื่อบอกว่ายังไม่มีเสียง
                     audioIcon.className = 'fa-solid fa-volume-xmark text-slate-300';
+                    
+                    const startAudioOnInteraction = () => {
+                        bgMusic.play().then(() => {
+                            bgMusic.muted = false;
+                            audioIcon.className = 'fa-solid fa-volume-high text-emerald-400';
+                            document.removeEventListener('click', startAudioOnInteraction);
+                            document.removeEventListener('touchstart', startAudioOnInteraction);
+                        }).catch(e => console.log("Audio block error:", e));
+                    };
+
+                    document.addEventListener('click', startAudioOnInteraction);
+                    document.addEventListener('touchstart', startAudioOnInteraction);
                 });
             }
         }
@@ -523,11 +532,10 @@
             document.getElementById('last-updated').innerText = `วันนี้ เวลา ${now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} น.`;
         }
 
-        // โหลดข้อมูลและเพลงเมื่อเปิดเว็บ
         window.addEventListener('DOMContentLoaded', () => {
-            initAudio(); // เรียกใช้ฟังก์ชันเล่นเพลง
+            initAudio(); 
             fetchData(false); 
-            setInterval(() => fetchData(false), 60000); // โหลดอัตโนมัติทุก 1 นาที
+            setInterval(() => fetchData(false), 60000); 
         });
     </script>
 </body>
