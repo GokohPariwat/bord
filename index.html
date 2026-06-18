@@ -33,15 +33,17 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         }
-        /* ซ่อน Scrollbar ทุก Browser แต่ยัง Scroll ได้ */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<!-- ปรับให้ Desktop บังคับความสูงเต็มจอ (lg:h-screen lg:overflow-hidden) ส่วนมือถือเลื่อนยาวตามปกติ (min-h-screen) -->
 <body class="text-slate-800 antialiased bg-slate-50 flex flex-col min-h-screen lg:h-screen lg:overflow-hidden">
 
-    <!-- Header (ลด Padding ลงเพื่อประหยัดพื้นที่แนวตั้ง) -->
+    <!-- ซ่อนเครื่องเล่นเสียง อัตโนมัติและเล่นวนซ้ำ -->
+    <audio id="bg-music" loop>
+        <source src="votr.m4a" type="audio/mp4">
+    </audio>
+
     <header class="bg-gradient-to-r from-slate-800 to-slate-900 text-white py-3 lg:py-4 px-4 lg:px-6 shadow-md shrink-0 z-50">
         <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
             <div class="flex items-center gap-3 w-full md:w-auto">
@@ -49,7 +51,7 @@
                 <div class="w-full text-center md:text-left">
                     <h1 class="text-xl lg:text-2xl font-bold tracking-wide">แดชบอร์ดผลการเลือกตั้ง <span class="text-blue-400">LIVE</span></h1>
                     
-                    <p class="text-xs lg:text-sm font-semibold text-rose-400 mt-0.5 drop-shadow-sm"><i class="fa-solid fa-circle-info mr-1"></i> ผลคะแนนอย่างไม่เป็นทางการ **กำลังอยู่ในช่วงทดสอบระบบ คะแนนยังไม่ใช่คะแนนจริง**</p>
+                    <p class="text-xs lg:text-sm font-semibold text-rose-400 mt-0.5 drop-shadow-sm"><i class="fa-solid fa-circle-info mr-1"></i> ผลคะแนนอย่างไม่เป็นทางการ</p>
                     
                     <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl">
                         <div>
@@ -74,27 +76,33 @@
                 </div>
             </div>
             
-            <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
-                <div class="text-left md:text-right">
+            <div class="flex items-center gap-2 md:gap-4 w-full md:w-auto justify-between md:justify-end">
+                <div class="text-left md:text-right hidden sm:block">
                     <p class="text-[10px] lg:text-xs text-slate-400">อัปเดตข้อมูลล่าสุด</p>
                     <p id="last-updated" class="text-xs lg:text-sm font-medium text-emerald-400">กำลังโหลด...</p>
                 </div>
-                <button onclick="fetchData(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-sm lg:text-base font-medium transition-all flex items-center gap-2 shadow-sm shrink-0">
-                    <i class="fa-solid fa-arrows-rotate" id="refresh-icon"></i> 
-                    <span>รีเฟรช</span>
-                </button>
+                
+                <div class="flex items-center gap-2 shrink-0">
+                    <!-- ปุ่มเปิด-ปิดเสียงเพลง -->
+                    <button onclick="toggleAudio()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 md:py-2 rounded-lg text-sm lg:text-base transition-all flex items-center justify-center min-w-[40px] shadow-sm" title="เปิด/ปิดเสียงเพลง">
+                        <i class="fa-solid fa-volume-xmark" id="audio-icon"></i>
+                    </button>
+
+                    <button onclick="fetchData(true)" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-sm lg:text-base font-medium transition-all flex items-center gap-2 shadow-sm shrink-0">
+                        <i class="fa-solid fa-arrows-rotate" id="refresh-icon"></i> 
+                        <span class="hidden sm:inline">รีเฟรช</span>
+                    </button>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content (ใช้ flex-1 min-h-0 เพื่อบังคับให้อยู่ในกรอบจอของ Desktop) -->
     <main class="flex-1 w-full max-w-[1600px] mx-auto p-3 lg:p-4 flex flex-col min-h-0">
         <div id="error-container" class="hidden mb-3 bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded-lg shrink-0 text-sm" role="alert">
             <strong class="font-bold"><i class="fa-solid fa-circle-exclamation mr-1"></i>เกิดข้อผิดพลาด!</strong>
             <span id="error-message"></span>
         </div>
 
-        <!-- Grid กล่องเนื้อหาซ้าย-ขวา -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5 flex-1 min-h-0 overflow-y-auto lg:overflow-hidden no-scrollbar">
             
             <!-- ส่วนผู้ว่าราชการกรุงเทพมหานคร -->
@@ -123,7 +131,6 @@
                     </div>
                 </div>
 
-                <!-- กล่องรวมกราฟ+ตาราง (จะปรับความสูงยืดหยุ่นพอดีกรอบใน Desktop) -->
                 <div class="glass-card rounded-xl p-3 flex-1 flex flex-col min-h-0 gap-2">
                     <h3 class="text-xs font-semibold text-slate-600 uppercase shrink-0"><i class="fa-solid fa-chart-column mr-1"></i>คะแนน 5 อันดับแรก</h3>
                     <div class="w-full h-[140px] md:h-[160px] shrink-0 relative">
@@ -131,7 +138,6 @@
                     </div>
                     
                     <h3 class="text-xs font-semibold text-slate-600 uppercase mt-1 shrink-0"><i class="fa-solid fa-list-ol mr-1"></i>ลำดับคะแนนทั้งหมด</h3>
-                    <!-- ตารางเลื่อนได้ โดยไม่ให้หน้าเพจหลักเลื่อนตาม (ซ่อน Scrollbar) -->
                     <div class="flex-1 overflow-y-auto no-scrollbar relative rounded-md border border-slate-100 min-h-[250px] lg:min-h-0 bg-white/50">
                         <table class="w-full text-left border-collapse">
                             <thead class="bg-slate-100/80 sticky top-0 z-10 backdrop-blur-sm">
@@ -213,7 +219,7 @@
     <script>
         Chart.register(ChartDataLabels);
 
-        // URL API ของคุณ
+        // API
         const API_URL = 'https://script.google.com/macros/s/AKfycbw4JXalISmJDW9SlCSOlRj5tHY8qVtBU0AgP4vkHrR1W-8DighUkpoPwLNeoslvl6uSmQ/exec';
         
         const GOV_TOTAL_STATIONS = 80; 
@@ -257,6 +263,44 @@
 
         const formatNum = (num) => new Intl.NumberFormat('th-TH').format(num || 0);
 
+        // ระบบเปิดปิดเสียงเพลง
+        function initAudio() {
+            const bgMusic = document.getElementById('bg-music');
+            const audioIcon = document.getElementById('audio-icon');
+            
+            // สั่งเล่นเพลงทันที (ถ้าเบราว์เซอร์อนุญาต)
+            const playPromise = bgMusic.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    // เล่นสำเร็จ
+                    audioIcon.className = 'fa-solid fa-volume-high text-emerald-400';
+                }).catch(error => {
+                    // เบราว์เซอร์บล็อกการเล่นอัตโนมัติ (ปกติสำหรับ Chrome/Safari)
+                    console.log("Browser blocked autoplay. Waiting for user interaction.");
+                    audioIcon.className = 'fa-solid fa-volume-xmark text-slate-300';
+                });
+            }
+        }
+
+        function toggleAudio() {
+            const bgMusic = document.getElementById('bg-music');
+            const audioIcon = document.getElementById('audio-icon');
+            
+            if (bgMusic.paused) {
+                bgMusic.play();
+                bgMusic.muted = false;
+                audioIcon.className = 'fa-solid fa-volume-high text-emerald-400';
+            } else {
+                bgMusic.muted = !bgMusic.muted;
+                if (bgMusic.muted) {
+                    audioIcon.className = 'fa-solid fa-volume-xmark text-slate-300';
+                } else {
+                    audioIcon.className = 'fa-solid fa-volume-high text-emerald-400';
+                }
+            }
+        }
+
         async function fetchData(isManual = false) {
             if (isManual) document.getElementById('refresh-icon').classList.add('fa-spin');
             hideError();
@@ -281,7 +325,6 @@
         }
 
         function processAndRender(data) {
-            // นับความคืบหน้า
             let govCounted = data.governor ? Object.keys(data.governor).length : 0;
             if (govCounted > GOV_TOTAL_STATIONS) govCounted = GOV_TOTAL_STATIONS; 
             const govProgressPercent = ((govCounted / GOV_TOTAL_STATIONS) * 100).toFixed(1);
@@ -480,9 +523,11 @@
             document.getElementById('last-updated').innerText = `วันนี้ เวลา ${now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} น.`;
         }
 
+        // โหลดข้อมูลและเพลงเมื่อเปิดเว็บ
         window.addEventListener('DOMContentLoaded', () => {
+            initAudio(); // เรียกใช้ฟังก์ชันเล่นเพลง
             fetchData(false); 
-            setInterval(() => fetchData(false), 60000); 
+            setInterval(() => fetchData(false), 60000); // โหลดอัตโนมัติทุก 1 นาที
         });
     </script>
 </body>
